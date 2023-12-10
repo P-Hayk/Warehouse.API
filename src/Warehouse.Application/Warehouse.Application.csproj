@@ -16,8 +16,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Forex.Infrastructure.Kafka" Version="1.0.72" />
-    <PackageReference Include="Forex.Kafka.Contracts" Version="1.0.264" />
+    <PackageReference Include="Forex.Infrastructure.RabbitMq" Version="1.2.2" />
+    <PackageReference Include="MassTransit" Version="8.0.5" />
     <PackageReference Include="MediatR" Version="12.2.0" />
   </ItemGroup>
 

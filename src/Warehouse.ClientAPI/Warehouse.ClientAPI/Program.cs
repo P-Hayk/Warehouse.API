@@ -4,7 +4,6 @@ using Warehouse.Infrastructure;
 using Warehouse.Infrastructure.Abstraction;
 using Warehouse.Infrastructure.Extensions;
 using Warehouse.Application.Extensions;
-using Forex.Infrastructure.Kafka.Extensions;
 
 internal class Program
 {

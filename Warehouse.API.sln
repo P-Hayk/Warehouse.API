@@ -5,13 +5,18 @@ VisualStudioVersion = 17.8.34316.72
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{5BC2F6C2-A14E-46A8-A059-C128684FF70A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse.ClientAPI", "src\Warehouse.ClientAPI\Warehouse.ClientAPI\Warehouse.ClientAPI.csproj", "{D041EF16-2D23-4E6C-8763-50B6EBB26548}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warehouse.ClientAPI", "src\Warehouse.ClientAPI\Warehouse.ClientAPI\Warehouse.ClientAPI.csproj", "{D041EF16-2D23-4E6C-8763-50B6EBB26548}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse.Application", "src\Warehouse.Application\Warehouse.Application.csproj", "{9AC0370E-D289-4021-B1D7-1711086EB64A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warehouse.Application", "src\Warehouse.Application\Warehouse.Application.csproj", "{9AC0370E-D289-4021-B1D7-1711086EB64A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse.Infrastructure", "src\Warehouse.Infrastructure\Warehouse.Infrastructure.csproj", "{5D861A8A-BDDD-46A9-9401-13172F4FB7BE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warehouse.Infrastructure", "src\Warehouse.Infrastructure\Warehouse.Infrastructure.csproj", "{5D861A8A-BDDD-46A9-9401-13172F4FB7BE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Warehouse.Domain", "src\Warehouse.Domain\Warehouse.Domain.csproj", "{CB80C9B0-3CD4-4CDD-9420-B8508E155F8E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Warehouse.Domain", "src\Warehouse.Domain\Warehouse.Domain.csproj", "{CB80C9B0-3CD4-4CDD-9420-B8508E155F8E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{24A8106C-3DC2-4AFA-925C-F6C683954C66}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

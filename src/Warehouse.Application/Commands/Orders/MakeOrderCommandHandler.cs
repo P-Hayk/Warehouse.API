@@ -1,11 +1,12 @@
-﻿using Forex.Infrastructure.Kafka.Abstractions;
-using Forex.Kafka.Contracts.Vps;
+﻿using Forex.Infrastructure.RabbitMq.Abstractions;
+using MassTransit;
 using MediatR;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Warehouse.Application.Events;
 using Warehouse.Domain.Abstractions;
 using Warehouse.Domain.Exceptions;
 using Warehouse.Domain.Models;
@@ -16,13 +17,13 @@ namespace Warehouse.Application.Commands
     {
         private readonly IProductRepository _productRepository;
         private readonly IOrderRepository _orderRepository;
-        private readonly IEventProducer _eventProducer;
+        private readonly IBus _bus;
 
-        public MakeOrderCommandHandler(IEventProducer eventProducer, IProductRepository productRepository, IOrderRepository orderRepository)
+        public MakeOrderCommandHandler(IBus bus, IProductRepository productRepository, IOrderRepository orderRepository)
         {
+            _bus = bus;
             _productRepository = productRepository;
             _orderRepository = orderRepository;
-            _eventProducer = eventProducer;
         }
 
         public async Task<Unit> Handle(MakeOrderCommand request, CancellationToken cancellationToken)
@@ -33,7 +34,7 @@ namespace Warehouse.Application.Commands
                 throw new NotFoundException("Product not found.");
             }
 
-            Order order = new Order();
+            Order order = new Order { Product = product , ProductId = product.Id };
 
             if (product.State == Domain.Models.ProductState.OutOfStock)
             {
@@ -44,31 +45,21 @@ namespace Warehouse.Application.Commands
 
                 order.State = OrderState.Pending;
             }
-            else if (product.State == ProductState.LowStock)
-            {
-                order.State = OrderState.UnderReview;
-            }
-            else
-            {
-                order.State = OrderState.Approved;
-            }
+            //else if (product.State == ProductState.LowStock)
+            //{
+            //    order.State = OrderState.UnderReview;
+            //}
+            //else
+            //{
+            //    order.State = OrderState.Approved;
+            //}
 
-            order.ProductId = product.Id;
             order.ClientId = 1;
             order.DateTime = DateTime.UtcNow;
 
-            await _orderRepository.CreateAsync(order);
+            var message = new OrderSubmittedEvent { CorrelationId = Guid.NewGuid(), Order = order };
 
-            var vpsServiceChangedEvent = new VpsServiceChangedEvent
-            {
-                Id = request.ProductId,
-                ClientId = request.ClientId,
-                //ProductWalletId = subscription.ProductWalletId,
-                //EventData = new VpsServiceChangedEvent.Types.EventData { Cancelled = new VpsServiceChangedEvent.Types.EventData.Types.Cancelled() },
-                //Revision = subscription.Revision,
-                //EventDateUtc = Timestamp.FromDateTime(_clock.UtcNow)
-            };
-            await _eventProducer.ProduceAsync(request.ProductId, vpsServiceChangedEvent, cancellationToken);
+            await _bus.Publish(message, cancellationToken);
 
 
             return Unit.Value;

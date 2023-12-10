@@ -53,7 +53,8 @@ internal class PostgreDbContext : DbContext, IDbContext
         productEntity.Ignore(e => e.State);
 
         productEntity.HasOne(e => e.Category)
-                     .WithMany(e => e.Products);
+                     .WithMany()
+                     .HasForeignKey(c => c.CategoryId);
 
         productEntity.HasData(new DbSeedData().Products);
 
@@ -63,7 +64,8 @@ internal class PostgreDbContext : DbContext, IDbContext
         orderEntity.ToTable("Orders").HasKey(e => new { e.ProductId, e.ClientId });
 
         orderEntity.HasOne(e => e.Product)
-                   .WithMany(e => e.Orders);
+                   .WithMany()
+                   .HasForeignKey(o => o.ProductId);
 
         orderEntity.HasOne(e => e.Client)
                    .WithMany(e => e.Orders);

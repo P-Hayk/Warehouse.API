@@ -20,6 +20,8 @@ public class OrderRepository : IOrderRepository
 
     public async Task CreateAsync(Order order)
     {
+        order.Product = null;
+
         _dbContext.Orders.Add(order);
 
         await _dbContext.SaveChangesAsync();

@@ -29,7 +29,6 @@ namespace Warehouse.Domain.Models
             }
         }
         public Category Category { get; set; }
-        public List<Order> Orders { get; set; }
         public int CategoryId { get; set; }
     }
 

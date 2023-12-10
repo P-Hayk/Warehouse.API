@@ -8,8 +8,8 @@ namespace Warehouse.Domain.Models
 {
     public class Order
     {
-        public int ProductId { get; set; }
         public int ClientId { get; set; }
+        public int ProductId { get; set; }
         public OrderState State { get; set; }
         public DateTime DateTime { get; set; }
         public Product Product { get; set; }

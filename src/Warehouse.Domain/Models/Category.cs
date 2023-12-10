@@ -11,6 +11,5 @@ namespace Warehouse.Domain.Models
         public int Id { get; set; }
         public string Name { get; set; }
         public int StockThreshold { get; set; }
-        public List<Product> Products { get; set; }
     }
 }

@@ -164,7 +164,7 @@ namespace Warehouse.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Warehouse.Domain.Models.Product", "Product")
-                        .WithMany("Orders")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -191,11 +191,6 @@ namespace Warehouse.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("Warehouse.Domain.Models.Client", b =>
-                {
-                    b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("Warehouse.Domain.Models.Product", b =>
                 {
                     b.Navigation("Orders");
                 });

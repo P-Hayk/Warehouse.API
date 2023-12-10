@@ -12,8 +12,8 @@ using Warehouse.Infrastructure;
 namespace Warehouse.Infrastructure.Migrations
 {
     [DbContext(typeof(PostgreDbContext))]
-    [Migration("20231207153006_Init")]
-    partial class Init
+    [Migration("20231210212143_chngs")]
+    partial class chngs
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -167,7 +167,7 @@ namespace Warehouse.Infrastructure.Migrations
                         .IsRequired();
 
                     b.HasOne("Warehouse.Domain.Models.Product", "Product")
-                        .WithMany("Orders")
+                        .WithMany()
                         .HasForeignKey("ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -194,11 +194,6 @@ namespace Warehouse.Infrastructure.Migrations
                 });
 
             modelBuilder.Entity("Warehouse.Domain.Models.Client", b =>
-                {
-                    b.Navigation("Orders");
-                });
-
-            modelBuilder.Entity("Warehouse.Domain.Models.Product", b =>
                 {
                     b.Navigation("Orders");
                 });
