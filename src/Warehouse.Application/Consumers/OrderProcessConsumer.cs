@@ -56,7 +56,7 @@ namespace Warehouse.Application.Consumers
             {
                 order.State = OrderState.UnderReview;
 
-                var @event = new OrderReserveMessage
+                var @event = new OrderReservedEvent
                 {
                     CorrelationId = context.Message.CorrelationId,
                     Order = order

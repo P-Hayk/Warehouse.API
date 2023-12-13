@@ -18,55 +18,41 @@ namespace Warehouse.Application.Saga
             // this.logger = LogManager.GetLogger<OrderProcessorStateMachine>();
             this.InstanceState(x => x.State);
             this.State(() => this.Pending);
-            this.ConfigureCorrelationIds();
-            this.Initially(SetOrderSubmittedEventHandler());
+            this.Initially(
+                 When(OrderSubmitted).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
+                               .Publish(c => new OrderProcessMessage
+                               {
+                                   CorrelationId = c.Saga.CorrelationId,
+                                   ClientId = c.Message.ClientId,
+                                   ProductId = c.Message.ProductId,
+                                   DateTime = c.Message.DateTime,
+                                   Count = c.Message.Count,
+                                   ReserveWhenAvaliable = c.Message.ReserveWhenAvaliable
+
+                               }).TransitionTo(Pending)
+                );
+
             this.During(
-                Pending
-               , SetOrderSubmittedEventHandler()
-               , SetOrderApprovedEventHandler()
-               , SetStockReserveHandler()
-               , SetOrderProcessedHandler()
-               , Ignore(OrderReserved)
+                Pending,
+                When(OrderApproved).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
+                               .TransitionTo(Final),
+                When(OrderReserved).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
+                               .TransitionTo(Processing),
+                Ignore(OrderSubmitted)
                );
 
-            During(Processing, Ignore(OrderSubmitted), Ignore(OrderProcessed), Ignore(OrderApproved), Ignore(OrderRejected), Ignore(OrderReserve));
-
-            During(Processing, When(OrderReserved).Finalize());
-
-            During(Final, Ignore(OrderSubmitted), Ignore(OrderProcessed), Ignore(OrderApproved), Ignore(OrderRejected), Ignore(OrderReserve), Ignore(OrderReserved));
-
-            //During(Final, Ignore(OrderReserve));
+            this.During(
+                Processing,
+                When(OrderApproved).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
+                               .TransitionTo(Final)
+                //When(OrderReserved).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
+                //               .TransitionTo(Processing)
+               );
 
             SetCompletedWhenFinalized();
         }
 
-        private void ConfigureCorrelationIds()
-        {
-            this.Event(() => this.OrderSubmitted
-            //, x => x.CorrelateById(c => c.Message.CorrelationId)
-            );
-
-            this.Event(() => this.OrderProcessed
-            //, x => x.CorrelateById(c => c.Message.CorrelationId)
-            );
-
-            this.Event(() => this.OrderReserved
-            //, x => x.CorrelateById(c => c.Message.CorrelationId)
-            );
-
-            this.Event(() => this.OrderReserve
-            //, x => x.CorrelateById(c => c.Message.CorrelationId)
-            );
-
-            this.Event(() => this.OrderApproved
-           //, x => x.CorrelateById(c => c.Message.CorrelationId)
-           );
-
-            this.Event(() => this.OrderRejected
-         //, x => x.CorrelateById(c => c.Message.CorrelationId)
-         );
-        }
-
+       
 
         private EventActivityBinder<OrderProcessingState, OrderSubmittedEvent> SetOrderSubmittedEventHandler() =>
             When(OrderSubmitted).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
@@ -114,16 +100,7 @@ namespace Warehouse.Application.Saga
             state.Order = order;
         }
 
-        //private async Task SendCommand<TCommand>(string endpointKey, BehaviorContext<OrderProcessingState, IMessage> context)
-        //    where TCommand : class, IMessage
-        //{
-        //    var sendEndpoint = await context.GetSendEndpoint(new Uri(ConfigurationManager.AppSettings[endpointKey]));
-        //    await sendEndpoint.Send<TCommand>(new
-        //    {
-        //        CorrelationId = context.Data.CorrelationId,
-        //        Order = context.Data.Order
-        //    });
-        //}
+
         public State Pending { get; private set; }
         public State Processing { get; private set; }
         public Event<OrderSubmittedEvent> OrderSubmitted { get; private set; }

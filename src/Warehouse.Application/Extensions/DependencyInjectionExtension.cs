@@ -169,7 +169,7 @@ namespace Warehouse.Application.Extensions
                     //})
                    
                     .RegisterMessage<OrderProcessMessage>()
-                    .RegisterMessage<OrderReserveMessage>()
+                    //.RegisterMessage<OrderReserveMessage>()
                     .RegisterMessage<OrderSubmittedEvent>()
                     .RegisterMessage<OrderApprovedEvent>()
                      .RegisterMessage<OrderReservedEvent>()
