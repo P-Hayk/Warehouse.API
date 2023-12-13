@@ -12,7 +12,6 @@ using Forex.Infrastructure.RabbitMq.Extensions;
 using MassTransit;
 using Warehouse.Application.Saga;
 using Warehouse.Application.Events;
-using Warehouse.Application.Consumers;
 using Warehouse.Application.Messages;
 using Forex.Infrastructure.Correlation;
 using Forex.Infrastructure.RabbitMq.Abstractions;
@@ -26,12 +25,13 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
 using System.Security.Authentication;
+using Warehouse.Application.Consumers;
 namespace Warehouse.Application.Extensions
 {
     public static class DependencyInjectionExtension
     {
 
-        public static IServiceCollection AddRabbitMq111(
+        public static IServiceCollection AddRabbitMq_SourceCode(
             this IServiceCollection services,
             Action<IRabbitMqMultiBusesConfigurator> rabbitMqMultiBusesConfiguratorAction)
         {
@@ -71,18 +71,10 @@ namespace Warehouse.Application.Extensions
             return services;
         }
 
-        public static IServiceCollection AddInMemoryProcessedMessageStorage(
-            this IServiceCollection services)
-        {
-            services.AddSingleton<InMemoryProcessedMessageStorage>();
-
-            return services;
-        }
-
         private static IServiceCollection AddMassTransitBus<TBus>(
-            IServiceCollection services,
-            RabbitMqMultiBusConfigurator<TBus> busConfigurator)
-            where TBus : class, IBus
+        IServiceCollection services,
+        RabbitMqMultiBusConfigurator<TBus> busConfigurator)
+        where TBus : class, IBus
         {
 
             services.AddMassTransit<TBus>(c =>
@@ -148,17 +140,17 @@ namespace Warehouse.Application.Extensions
             return services;
         }
 
-        public static IServiceCollection AddKafka(this IServiceCollection services)
+        public static IServiceCollection AddRabbitMq(this IServiceCollection services)
         {
-            services.AddInMemoryProcessedMessageStorage();
+            services.AddSingleton<InMemoryProcessedMessageStorage>();
 
-            services.AddRabbitMq111(c =>
+            services.AddRabbitMq_SourceCode(c =>
 
                   c.AddBus<IBus>("Default")
                     .ConfigureBus(c =>
                     {
                         c.AddConsumer<OrderProcessConsumer>();
-                        //c.AddConsumer<CreateCurrencyCommandEventHandler>();
+                        c.AddConsumer<OrderReserveConsumer>();
                         //c.AddConsumer<CreateOperationCommandEventHandler>();
                         //c.AddConsumer<OperationCreatedEventHandler>();
                         //c.AddConsumer<CreateTransactionCommandEventHandler>();
@@ -175,28 +167,26 @@ namespace Warehouse.Application.Extensions
                     //    cfg.UseDeduplicationConsumeFilter<MongoDbProcessedMessageStorage>(context,
                     //        c => c.ExpiryTime = TimeSpan.FromMinutes(5));
                     //})
-                    //.RegisterMessage<CreateAdminCommand>()
-                    //.RegisterMessage<CurrencyCreatedEvent>()
-                    //.RegisterMessage<CreateOperationCommand>()
-                    //.RegisterMessage<OperationCreatedEvent>()
-                    //.RegisterMessage<StartTransactionCreationCommand>()
+                   
                     .RegisterMessage<OrderProcessMessage>()
-                    //.RegisterMessage<OrderSubmittedEvent>()
-                    //.RegisterMessage<OrderApprovedEvent>()
-                    // .RegisterMessage<OrderReservedEvent>()
-                    //.RegisterMessage<OrderRejectedEvent>()
+                    .RegisterMessage<OrderReserveMessage>()
+                    .RegisterMessage<OrderSubmittedEvent>()
+                    .RegisterMessage<OrderApprovedEvent>()
+                     .RegisterMessage<OrderReservedEvent>()
+                    .RegisterMessage<OrderRejectedEvent>()
 
                     );
 
 
             services.AddScoped<OrderSubmittedEvent>();
             services.AddScoped<OrderApprovedEvent>();
+            services.AddScoped<OrderReservedEvent>();
             return services;
         }
 
-        public static IServiceCollection AddMediatR(this IServiceCollection services)
+        public static IServiceCollection AddMediatR(this IServiceCollection services, string assemblyString)
         {
-            services.AddMediatR(c => c.RegisterServicesFromAssembly(Assembly.Load("Warehouse.Application")));
+            services.AddMediatR(c => c.RegisterServicesFromAssembly(Assembly.Load(assemblyString)));
 
             return services;
 

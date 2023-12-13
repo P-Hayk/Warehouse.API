@@ -14,7 +14,7 @@ namespace Warehouse.Application.Saga
         {
             this.CorrelationId = correlationId;
         }
-        public Guid Id { get; set; }
+        public int Id { get; set; }
         public Order Order { get; set; }      
         public DateTime Created { get; set; }
         public DateTime Updated { get; set; }

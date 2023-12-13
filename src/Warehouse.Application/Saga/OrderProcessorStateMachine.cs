@@ -24,9 +24,19 @@ namespace Warehouse.Application.Saga
                 Pending
                , SetOrderSubmittedEventHandler()
                , SetOrderApprovedEventHandler()
-               , SetStockReservedHandler()
+               , SetStockReserveHandler()
                , SetOrderProcessedHandler()
+               , Ignore(OrderReserved)
                );
+
+            During(Processing, Ignore(OrderSubmitted), Ignore(OrderProcessed), Ignore(OrderApproved), Ignore(OrderRejected), Ignore(OrderReserve));
+
+            During(Processing, When(OrderReserved).Finalize());
+
+            During(Final, Ignore(OrderSubmitted), Ignore(OrderProcessed), Ignore(OrderApproved), Ignore(OrderRejected), Ignore(OrderReserve), Ignore(OrderReserved));
+
+            //During(Final, Ignore(OrderReserve));
+
             SetCompletedWhenFinalized();
         }
 
@@ -41,6 +51,10 @@ namespace Warehouse.Application.Saga
             );
 
             this.Event(() => this.OrderReserved
+            //, x => x.CorrelateById(c => c.Message.CorrelationId)
+            );
+
+            this.Event(() => this.OrderReserve
             //, x => x.CorrelateById(c => c.Message.CorrelationId)
             );
 
@@ -59,18 +73,33 @@ namespace Warehouse.Application.Saga
                                .Publish(c => new OrderProcessMessage
                                {
                                    CorrelationId = c.Saga.CorrelationId,
-                                   Order = c.Message.Order
+                                   ClientId = c.Message.ClientId,
+                                   ProductId = c.Message.ProductId,
+                                   DateTime = c.Message.DateTime,
+                                   Count = c.Message.Count,
+                                   ReserveWhenAvaliable = c.Message.ReserveWhenAvaliable
 
                                }).TransitionTo(Pending);
 
 
         private EventActivityBinder<OrderProcessingState, OrderApprovedEvent> SetOrderApprovedEventHandler() =>
             When(OrderApproved).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
+
                                .Finalize();
 
+        private EventActivityBinder<OrderProcessingState, OrderReserveMessage> SetStockReserveHandler() =>
+            When(OrderReserve).Then(c => this.UpdateSagaState(c.Saga, c.Message.Order))
+                                 .Publish(c => new OrderReserveMessage
+                                 {
+                                     CorrelationId = c.Saga.CorrelationId,
+                                     Order = c.Message.Order
+                                 }).TransitionTo(Processing);
+
         private EventActivityBinder<OrderProcessingState, OrderReservedEvent> SetStockReservedHandler() =>
-            When(OrderReserved).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
-                               .Finalize();
+
+                  When(OrderReserved).Finalize();
+
+
 
         private EventActivityBinder<OrderProcessingState, OrderProccessedEvent> SetOrderProcessedHandler() =>
             When(OrderProcessed).Then(c => this.UpdateSagaState(c.Saga, c.Saga.Order))
@@ -96,11 +125,12 @@ namespace Warehouse.Application.Saga
         //    });
         //}
         public State Pending { get; private set; }
-
+        public State Processing { get; private set; }
         public Event<OrderSubmittedEvent> OrderSubmitted { get; private set; }
         public Event<OrderApprovedEvent> OrderApproved { get; private set; }
         public Event<OrderRejectedEvent> OrderRejected { get; private set; }
         public Event<OrderProccessedEvent> OrderProcessed { get; private set; }
         public Event<OrderReservedEvent> OrderReserved { get; private set; }
+        public Event<OrderReserveMessage> OrderReserve { get; private set; }
     }
 }

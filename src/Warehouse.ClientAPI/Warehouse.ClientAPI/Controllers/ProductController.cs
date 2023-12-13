@@ -17,7 +17,7 @@ namespace Warehouse.ClientAPI.Controllers
         }
 
         [HttpGet("products")]
-        public async Task<IActionResult> GetProducts()
+        public async Task<IActionResult> Products()
         {
             var response = await _sender.Send(new GetProductsQuery());
 

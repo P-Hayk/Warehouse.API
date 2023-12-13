@@ -11,6 +11,7 @@ using Warehouse.Application.Commands;
 using Warehouse.Application.Events;
 using Warehouse.Application.Messages;
 using Warehouse.Domain.Abstractions;
+using Warehouse.Domain.Models;
 using Warehouse.Infrastructure.Repositories;
 
 namespace Warehouse.Application.Consumers
@@ -19,22 +20,28 @@ namespace Warehouse.Application.Consumers
     {
         private readonly IEventPublisher _eventPublisher;
         private readonly IOrderRepository _orderRepository;
+        private readonly IBus _bus;
 
-        public OrderProcessConsumer(IEventPublisher eventPublisher, IOrderRepository orderRepository)
+        public OrderProcessConsumer(IBus bus, IEventPublisher eventPublisher, IOrderRepository orderRepository)
         {
             _eventPublisher = eventPublisher;
+            _bus = bus;
             _orderRepository = orderRepository;
         }
 
-        public IOrderRepository OrderRepository { get; }
-
         public async Task Consume(ConsumeContext<OrderProcessMessage> context)
         {
-            var (order, cancellationToken) = (context.Message.Order, context.CancellationToken);
+            var (message, cancellationToken) = (context.Message, context.CancellationToken);
 
-            if (order.Product.State == Domain.Models.ProductState.Available)
+            var order = new Order
             {
-                order.State = Domain.Models.OrderState.Approved;
+                ClientId = 1,
+                ProductId = message.ProductId,
+            };
+
+            if (message.ProductState == ProductState.Available)
+            {
+                order.State = OrderState.Approved;
 
                 var @event = new OrderApprovedEvent
                 {
@@ -43,35 +50,22 @@ namespace Warehouse.Application.Consumers
                 };
 
                 await context.Publish(@event, cancellationToken);
-
             }
 
-            else if (order.Product.State == Domain.Models.ProductState.OutOfStock)
+            else if (message.ProductState == ProductState.LowStock)
             {
-                var @event = new OrderRejectedEvent
+                order.State = OrderState.UnderReview;
+
+                var @event = new OrderReserveMessage
                 {
                     CorrelationId = context.Message.CorrelationId,
-                    Order = order,
+                    Order = order
                 };
-                await context.Publish(@event, cancellationToken);
+
+                await context.Publish(@event);
             }
 
-            else if (order.Product.State == Domain.Models.ProductState.LowStock)
-            {
-                var @event = new OrderReservedEvent
-                {
-                    CorrelationId = context.Message.CorrelationId,
-                    Order = order,
-                };
-                await context.Publish(@event, cancellationToken);
-            }
-
-            await _orderRepository.CreateAsync(order);
-
-
-
-            //await context.Publish(@event, cancellationToken);
-
+            await _orderRepository.UpdateAsync(order);
         }
     }
 }

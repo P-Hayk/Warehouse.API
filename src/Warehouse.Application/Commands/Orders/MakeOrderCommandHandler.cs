@@ -28,39 +28,47 @@ namespace Warehouse.Application.Commands
 
         public async Task<Unit> Handle(MakeOrderCommand request, CancellationToken cancellationToken)
         {
+            request.ProductId = 1;
+
             var product = await _productRepository.GetProductWithCategoryAsync(request.ProductId);
             if (product is null)
             {
                 throw new NotFoundException("Product not found.");
             }
 
-            Order order = new Order { Product = product , ProductId = product.Id };
-
-            if (product.State == Domain.Models.ProductState.OutOfStock)
+            if (product.State == ProductState.OutOfStock)
             {
                 if (!request.ReserveWhenAvaliable)
                 {
                     throw new NotFoundException("Product not avaliable.");
                 }
-
-                order.State = OrderState.Pending;
             }
-            //else if (product.State == ProductState.LowStock)
-            //{
-            //    order.State = OrderState.UnderReview;
-            //}
-            //else
-            //{
-            //    order.State = OrderState.Approved;
-            //}
 
-            order.ClientId = 1;
-            order.DateTime = DateTime.UtcNow;
+            if (product.Stock < request.Count)
+            {
+                throw new NotFoundException("Product not avaliable.");
+            }
 
-            var message = new OrderSubmittedEvent { CorrelationId = Guid.NewGuid(), Order = order };
+            //await _orderRepository.CreateAsync(new Order
+            //{
+            //    ClientId = request.ClientId,
+            //    ProductId = product.Id,
+            //    State = OrderState.Pending,
+            //    DateTime = DateTime.UtcNow
+            //});
+
+            var message = new OrderSubmittedEvent
+            {
+                CorrelationId = new Guid("9e5a1ed0-f41b-4ca1-9fd4-cff129176b85"),
+                ProductId = product.Id,
+                ClientId = request.ClientId,
+                Count = request.Count,
+                ReserveWhenAvaliable = request.ReserveWhenAvaliable,
+                ProductState = product.State,
+                DateTime = DateTime.UtcNow
+            };
 
             await _bus.Publish(message, cancellationToken);
-
 
             return Unit.Value;
         }

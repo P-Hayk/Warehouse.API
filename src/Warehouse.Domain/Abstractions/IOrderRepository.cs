@@ -9,4 +9,6 @@ namespace Warehouse.Domain.Abstractions;
 public interface IOrderRepository
 {
     Task CreateAsync(Order order);
+    Task<Order> GetAsync(int id);
+    Task UpdateAsync(Order order);
 }

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <Folder Include="Abstractions\" />
+    <Folder Include="EventHandlers\" />
     <Folder Include="Queries\Client\" />
   </ItemGroup>
 

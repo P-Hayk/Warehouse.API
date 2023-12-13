@@ -4,7 +4,6 @@ using Warehouse.Infrastructure;
 using Warehouse.Infrastructure.Abstraction;
 using Warehouse.Infrastructure.Extensions;
 using Warehouse.Application.Extensions;
-
 internal class Program
 {
     private static void Main(string[] args)
@@ -19,15 +18,13 @@ internal class Program
         var config = builder.Configuration;
         builder.Services.AddDbContext(config);
 
-
-        builder.Services.AddMediatR("Warehouse.Application");
+        builder.Services.AddMediatR("Warehouse.AdminAPI");
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
 
         builder.Services.AddRabbitMq();
-
 
         var app = builder.Build();
 

@@ -28,20 +28,20 @@ namespace Warehouse.Application.Commands
 
         public async Task<Unit> Handle(ProccessOrderRequest request, CancellationToken cancellationToken)
         {
-            if (request.Order.Product.State == Domain.Models.ProductState.Available)
-            {
-                var @event = new OrderApprovedEvent
-                {
-                    Order = request.Order,
-                };
-                await _eventPublisher.Publish(@event, cancellationToken);
-            }
+            //if (request.Order.Product.State == Domain.Models.ProductState.Available)
+            //{
+            //    var @event = new OrderApprovedEvent
+            //    {
+            //        Order = request.Order,
+            //    };
+            //    await _eventPublisher.Publish(@event, cancellationToken);
+            //}
 
-            if (request.Order.Product.State == Domain.Models.ProductState.OutOfStock)
-            {
-                var @event = new OrderRejectedEvent { };
-                await _eventPublisher.Publish(@event, cancellationToken);
-            }
+            //if (request.Order.Product.State == Domain.Models.ProductState.OutOfStock)
+            //{
+            //    var @event = new OrderRejectedEvent { };
+            //    await _eventPublisher.Publish(@event, cancellationToken);
+            //}
 
             return Unit.Value;
         }
