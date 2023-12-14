@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Mvc;
 using Warehouse.AdminAPI.ApiModels;
+using Warehouse.AdminAPI.ApiModels.Product;
+using Warehouse.AdminAPI.Application.Commands.Products;
 using Warehouse.Application.Queries;
 
 namespace Warehouse.AdminAPI.Controllers
@@ -51,18 +53,16 @@ namespace Warehouse.AdminAPI.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update()
+        public async Task<IActionResult> Update(UpdateProductApiRequest request)
         {
-            var response = await _sender.Send(new GetProductsQuery());
-
-            var products = response.Products.Select(x => new ProductApiModel
+            var response = await _sender.Send(new UpdateProductCommand
             {
-                Id = x.Id,
-                Name = x.Name,
-                Stock = x.Stock
+                Id = request.Id,
+                Name = request.Name,
+                Stock = request.Stock
             });
 
-            return Ok(products);
+            return Ok(response);
         }
     }
 }

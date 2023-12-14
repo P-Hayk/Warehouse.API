@@ -8,7 +8,7 @@ using Warehouse.Domain.Models;
 
 namespace Warehouse.AdminAPI.Application.Commands.Orders
 {
-    public class ApproveOrderCommandHandler : IRequestHandler<ApproveOrderCommand, Unit>
+    public class RejectOrderCommandHandler : IRequestHandler<ApproveOrderCommand, Unit>
     {
         private readonly IBus _bus;
         private readonly ICategoryRepository _categoryRepository;
@@ -16,7 +16,7 @@ namespace Warehouse.AdminAPI.Application.Commands.Orders
         private readonly IOrderRepository _orderRepository;
         private readonly IEventPublisher _eventPublisher;
 
-        public ApproveOrderCommandHandler(IBus bus, ICategoryRepository categoryRepository
+        public RejectOrderCommandHandler(IBus bus, ICategoryRepository categoryRepository
                                         , IProductRepository productRepository
                                         , IOrderRepository orderRepository
             , IEventPublisher eventPublisher
@@ -43,10 +43,13 @@ namespace Warehouse.AdminAPI.Application.Commands.Orders
                 throw new ArgumentException("Order not found");
             }
 
-            order.State = OrderState.Approved;
+            var product = await _productRepository.GetAsync(order.ProductId);
+            product.Stock++;
+
+            order.State = OrderState.Rejected;
             await _orderRepository.UpdateStateAsync(order);
 
-            var @event = new OrderApprovedEvent
+            var @event = new OrderRejectedEvent
             {
                 CorrelationId = order.CorrelationId.Value,
                 Order = order

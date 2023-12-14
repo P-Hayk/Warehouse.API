@@ -11,9 +11,9 @@ using Warehouse.Infrastructure.Abstraction;
 namespace Warehouse.Infrastructure.Repositories;
 public class ProductRepository : IProductRepository
 {
-    private readonly IDbContext _dbContext;
+    private readonly PostgreDbContext _dbContext;
 
-    public ProductRepository(IDbContext dbContext)
+    public ProductRepository(PostgreDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -31,6 +31,13 @@ public class ProductRepository : IProductRepository
     {
         return await _dbContext.Products.Include(p => p.Category)
                                         .FirstOrDefaultAsync(p => p.Id == productId);
+
+    }
+
+    public async Task UpdateAsync(Product product)
+    {
+        _dbContext.Update(product);
+        await _dbContext.SaveChangesAsync();
 
     }
 }

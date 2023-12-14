@@ -1,13 +1,12 @@
 ﻿using Forex.Infrastructure.RabbitMq.Abstractions;
 using MassTransit;
- using Warehouse.Application.Events;
+using Warehouse.Application.Events;
 using Warehouse.Application.Messages;
 using Warehouse.Domain.Abstractions;
 using Warehouse.Domain.Models;
 
 namespace Warehouse.Application.Consumers
 {
-
     public class OrderReserveConsumer : IConsumer<OrderReserveMessage>
     {
         private readonly IEventPublisher _eventPublisher;

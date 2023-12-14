@@ -12,8 +12,8 @@ using Warehouse.Infrastructure;
 namespace Warehouse.Infrastructure.Migrations
 {
     [DbContext(typeof(PostgreDbContext))]
-    [Migration("20231210212143_chngs")]
-    partial class chngs
+    [Migration("20231214115055_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -83,21 +83,32 @@ namespace Warehouse.Infrastructure.Migrations
 
             modelBuilder.Entity("Warehouse.Domain.Models.Order", b =>
                 {
-                    b.Property<int>("ProductId")
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("ClientId")
                         .HasColumnType("integer");
 
+                    b.Property<Guid?>("CorrelationId")
+                        .HasColumnType("uuid");
+
                     b.Property<DateTime>("DateTime")
                         .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("ProductId")
+                        .HasColumnType("integer");
 
                     b.Property<int>("State")
                         .HasColumnType("integer");
 
-                    b.HasKey("ProductId", "ClientId");
+                    b.HasKey("Id");
 
                     b.HasIndex("ClientId");
+
+                    b.HasIndex("ProductId");
 
                     b.ToTable("Orders", (string)null);
                 });
@@ -180,17 +191,12 @@ namespace Warehouse.Infrastructure.Migrations
             modelBuilder.Entity("Warehouse.Domain.Models.Product", b =>
                 {
                     b.HasOne("Warehouse.Domain.Models.Category", "Category")
-                        .WithMany("Products")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("Warehouse.Domain.Models.Category", b =>
-                {
-                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("Warehouse.Domain.Models.Client", b =>

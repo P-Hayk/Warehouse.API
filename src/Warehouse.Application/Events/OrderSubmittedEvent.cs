@@ -11,11 +11,13 @@ namespace Warehouse.Application.Events
     public class OrderSubmittedEvent : CorrelatedBy<Guid>
     {
         public Guid CorrelationId { get; set; }
+        public int OrderId { get; set; }
         public int ClientId { get; set; }
         public int ProductId { get; set; }
         public bool ReserveWhenAvaliable { get; set; }
         public int Count { get; set; }
         public DateTime DateTime { get; set; }
         public ProductState ProductState { get; set; }
+        public OrderState OrderState { get; set; }
     }
 }

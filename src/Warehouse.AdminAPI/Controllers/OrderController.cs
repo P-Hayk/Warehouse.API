@@ -31,12 +31,19 @@ namespace Warehouse.AdminAPI.Controllers
             return Ok(products);
         }
 
-        [HttpPut("approve")]
-        public async Task<IActionResult> Approve()
+        [HttpPut("approve{orderId}")]
+        public async Task<IActionResult> Approve(int orderId)
         {
-            var response = await _sender.Send(new ApproveOrderCommand());
+            var response = await _sender.Send(new ApproveOrderCommand { Id = orderId });
 
-           
+            return Ok(response);
+        }
+
+        [HttpPut("reject{orderId}")]
+        public async Task<IActionResult> Reject(int orderId)
+        {
+            var response = await _sender.Send(new RejectOrderCommand { Id = orderId });
+
             return Ok(response);
         }
     }

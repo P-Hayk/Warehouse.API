@@ -49,17 +49,25 @@ namespace Warehouse.Application.Commands
                 throw new NotFoundException("Product not avaliable.");
             }
 
-            //await _orderRepository.CreateAsync(new Order
-            //{
-            //    ClientId = request.ClientId,
-            //    ProductId = product.Id,
-            //    State = OrderState.Pending,
-            //    DateTime = DateTime.UtcNow
-            //});
+            var correlationId = Guid.NewGuid();
+
+            product.Stock--;
+
+            var orderId = await _orderRepository.CreateAsync(new Order
+            {
+                ClientId = request.ClientId,
+                ProductId = product.Id,
+                State = OrderState.Pending,
+                CorrelationId = correlationId,
+                DateTime = DateTime.UtcNow,
+                Count = 2,
+            });
 
             var message = new OrderSubmittedEvent
             {
-                CorrelationId = new Guid("9e5a1ed0-f41b-4ca1-9fd4-cff129176b85"),
+                CorrelationId = correlationId,
+                OrderId = orderId,
+                OrderState = OrderState.Pending,
                 ProductId = product.Id,
                 ClientId = request.ClientId,
                 Count = request.Count,
@@ -67,6 +75,7 @@ namespace Warehouse.Application.Commands
                 ProductState = product.State,
                 DateTime = DateTime.UtcNow
             };
+
 
             await _bus.Publish(message, cancellationToken);
 

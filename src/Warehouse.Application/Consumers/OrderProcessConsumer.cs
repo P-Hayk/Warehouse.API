@@ -35,8 +35,8 @@ namespace Warehouse.Application.Consumers
 
             var order = new Order
             {
-                ClientId = 1,
-                ProductId = message.ProductId,
+                Id = message.OrderId,
+                State = message.OrderState,
             };
 
             if (message.ProductState == ProductState.Available)
@@ -51,9 +51,13 @@ namespace Warehouse.Application.Consumers
 
                 await context.Publish(@event, cancellationToken);
             }
-
             else if (message.ProductState == ProductState.LowStock)
             {
+                if (order.State == OrderState.UnderReview)
+                {
+                    return;
+                }
+
                 order.State = OrderState.UnderReview;
 
                 var @event = new OrderReservedEvent
@@ -65,7 +69,7 @@ namespace Warehouse.Application.Consumers
                 await context.Publish(@event);
             }
 
-            await _orderRepository.UpdateAsync(order);
+            await _orderRepository.UpdateStateAsync(order);
         }
     }
 }

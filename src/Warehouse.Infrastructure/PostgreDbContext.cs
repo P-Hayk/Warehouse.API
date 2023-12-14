@@ -11,7 +11,7 @@ using Warehouse.Infrastructure.Extensions;
 
 namespace Warehouse.Infrastructure;
 
-internal class PostgreDbContext : DbContext, IDbContext
+public class PostgreDbContext : DbContext
 {
     public PostgreDbContext(DbContextOptions<PostgreDbContext> options)
         : base(options)
@@ -23,29 +23,33 @@ internal class PostgreDbContext : DbContext, IDbContext
         //----------
         var categoryEntity = modelBuilder.Entity<Category>();
 
-        categoryEntity.ToTable("Categories").HasKey(e => e.Id);
+        categoryEntity.ToTable("Categories")
+                      .HasKey(e => e.Id);
 
-        categoryEntity.Property(e => e.Id).ValueGeneratedOnAdd();
+        categoryEntity.Property(e => e.Id)
+                      .ValueGeneratedOnAdd();
 
         categoryEntity.Property(e => e.Name)
-            .IsRequired()
-            .HasMaxLength(255);
+                      .IsRequired()
+                      .HasMaxLength(255);
 
         categoryEntity.Property(e => e.StockThreshold)
-            .IsRequired();
+                      .IsRequired();
 
         categoryEntity.HasData(new DbSeedData().Categories);
 
         //----------
         var productEntity = modelBuilder.Entity<Product>();
 
-        productEntity.ToTable("Products").HasKey(e => e.Id);
+        productEntity.ToTable("Products")
+                     .HasKey(e => e.Id);
 
-        productEntity.Property(e => e.Id).ValueGeneratedOnAdd();
+        productEntity.Property(e => e.Id)
+                     .ValueGeneratedOnAdd();
 
         productEntity.Property(e => e.Name)
-            .IsRequired()
-            .HasMaxLength(255);
+                     .IsRequired()
+                     .HasMaxLength(255);
 
         productEntity.Property(e => e.Stock)
                      .IsRequired();
@@ -61,7 +65,11 @@ internal class PostgreDbContext : DbContext, IDbContext
         //----------
         var orderEntity = modelBuilder.Entity<Order>();
 
-        orderEntity.ToTable("Orders").HasKey(e => new { e.ProductId, e.ClientId });
+        orderEntity.ToTable("Orders")
+                   .HasKey(e => e.Id);
+
+        orderEntity.Property(e => e.Id)
+                   .ValueGeneratedOnAdd();
 
         orderEntity.HasOne(e => e.Product)
                    .WithMany()
@@ -75,6 +83,12 @@ internal class PostgreDbContext : DbContext, IDbContext
 
         orderEntity.Property(e => e.State)
                    .IsRequired();
+
+        orderEntity.Property(e => e.Count)
+                  .IsRequired();
+
+        orderEntity.Property(e => e.CorrelationId)
+                   .IsRequired(false);
     }
 
 

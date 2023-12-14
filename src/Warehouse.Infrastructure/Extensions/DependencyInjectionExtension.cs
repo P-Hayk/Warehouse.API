@@ -35,7 +35,7 @@ public static class DependencyInjectionExtension
             options.UseNpgsql(configuration.GetConnectionString("Postgre"));
         });
 
-        services.AddScoped<IDbContext, PostgreDbContext>();
+        services.AddScoped<PostgreDbContext>();
 
         return services;
 

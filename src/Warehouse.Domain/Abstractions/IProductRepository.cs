@@ -8,6 +8,6 @@ namespace Warehouse.Domain.Abstractions
         Task<Product> GetAsync(int id);
 
         Task<Product> GetProductWithCategoryAsync(int productId);
-
+        Task UpdateAsync(Product product);
     }
 }

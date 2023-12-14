@@ -11,9 +11,9 @@ using Warehouse.Infrastructure.Abstraction;
 namespace Warehouse.Infrastructure.Repositories;
 public class CategoryRepository : ICategoryRepository
 {
-    private readonly IDbContext _dbContext;
+    private readonly PostgreDbContext _dbContext;
 
-    public CategoryRepository(IDbContext dbContext)
+    public CategoryRepository(PostgreDbContext dbContext)
     {
         _dbContext = dbContext;
     }

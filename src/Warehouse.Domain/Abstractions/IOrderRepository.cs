@@ -8,7 +8,8 @@ using Warehouse.Domain.Models;
 namespace Warehouse.Domain.Abstractions;
 public interface IOrderRepository
 {
-    Task CreateAsync(Order order);
+    Task<int> CreateAsync(Order order);
     Task<Order> GetAsync(int id);
-    Task UpdateAsync(Order order);
+    Task<ICollection<Order>> GetUnderReviewOrdersByProductIdAsync(int id);
+    Task UpdateStateAsync(Order order);
 }

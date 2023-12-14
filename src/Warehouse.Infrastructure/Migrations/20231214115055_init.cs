@@ -9,7 +9,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Warehouse.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class chngs : Migration
+    public partial class init : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -67,14 +67,17 @@ namespace Warehouse.Infrastructure.Migrations
                 name: "Orders",
                 columns: table => new
                 {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     ClientId = table.Column<int>(type: "integer", nullable: false),
                     ProductId = table.Column<int>(type: "integer", nullable: false),
                     State = table.Column<int>(type: "integer", nullable: false),
-                    DateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    DateTime = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CorrelationId = table.Column<Guid>(type: "uuid", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Orders", x => new { x.ProductId, x.ClientId });
+                    table.PrimaryKey("PK_Orders", x => x.Id);
                     table.ForeignKey(
                         name: "FK_Orders_Clients_ClientId",
                         column: x => x.ClientId,
@@ -113,6 +116,11 @@ namespace Warehouse.Infrastructure.Migrations
                 name: "IX_Orders_ClientId",
                 table: "Orders",
                 column: "ClientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Orders_ProductId",
+                table: "Orders",
+                column: "ProductId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Products_CategoryId",
