@@ -2,6 +2,7 @@
 using Warehouse.Application.Events;
 using Warehouse.Application.Messages;
 using Warehouse.Domain.Models;
+using Warehouse.Infrastructure.Saga;
 
 namespace Warehouse.Application.Saga
 {
@@ -21,11 +22,10 @@ namespace Warehouse.Application.Saga
                                    CorrelationId = c.Saga.CorrelationId,
                                    OrderId = c.Message.OrderId,
                                    ClientId = c.Message.ClientId,
-                                   ProductId = c.Message.ProductId,
+                                   ProductId = c.Message.ProductId, 
                                    DateTime = c.Message.DateTime,
                                    Count = c.Message.Count,
-                                   OrderState = c.Message.OrderState,
-                                   ReserveWhenAvaliable = c.Message.ReserveWhenAvaliable
+                                   OrderState = c.Message.OrderState
 
                                }).TransitionTo(Pending)
                                );

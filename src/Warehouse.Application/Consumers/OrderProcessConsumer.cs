@@ -46,7 +46,7 @@ namespace Warehouse.Application.Consumers
                 var @event = new OrderApprovedEvent
                 {
                     CorrelationId = context.Message.CorrelationId,
-                    Order = order,
+                    Order = order
                 };
 
                 await context.Publish(@event, cancellationToken);

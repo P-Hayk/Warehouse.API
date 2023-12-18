@@ -1,7 +1,10 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Warehouse.AdminAPI.ApiModels;
+using Warehouse.AdminAPI.ApiModels.Categories;
+using Warehouse.AdminAPI.Application.Commands.Categories;
 using Warehouse.AdminAPI.Application.Queires.Categories;
+using Warehouse.Application.Commands;
 
 namespace Warehouse.AdminAPI.Controllers
 {
@@ -9,70 +12,43 @@ namespace Warehouse.AdminAPI.Controllers
     public class CategoryController : ControllerBase
     {
         private readonly ISender _sender;
+        private readonly IMapper _mapper;
 
-        public CategoryController(ISender sender)
+        public CategoryController(ISender sender, IMapper mapper)
         {
             _sender = sender;
+            _mapper = mapper;
         }
 
-        [HttpGet()]
+        [HttpGet]
         public async Task<IActionResult> Categories()
         {
             var response = await _sender.Send(new GetCategoriesQuery());
 
-            var categories = response.Categories.Select(x => new
-            {
-                Id = x.Id,
-                Name = x.Name,
-            });
+            var categories = _mapper.Map<ICollection<CategoryApiModel>>(response.Categories);
 
             return Ok(categories);
-
         }
 
         [HttpPost]
         public async Task<IActionResult> Create(CategoryRequest request)
         {
-            var response = await _sender.Send(new GetCategoriesQuery());
+            var command = _mapper.Map<CreateCategoryCommand>(request);
+            await _sender.Send(command);
 
-            var categories = response.Categories.Select(x => new
-            {
-                Id = x.Id,
-                Name = x.Name,
-            });
-
-            return Ok(categories);
-
+            return Ok();
         }
 
         [HttpPut]
         public async Task<IActionResult> Update()
         {
-            var response = await _sender.Send(new GetCategoriesQuery());
-
-            var categories = response.Categories.Select(x => new
-            {
-                Id = x.Id,
-                Name = x.Name,
-            });
-
-            return Ok(categories);
-
+            return Ok();
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> Delete()
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(int id)
         {
-            var response = await _sender.Send(new GetCategoriesQuery());
-
-            var categories = response.Categories.Select(x => new
-            {
-                Id = x.Id,
-                Name = x.Name,
-            });
-
-            return Ok(categories);
-
+            return Ok();
         }
     }
 }

@@ -1,8 +1,7 @@
-﻿namespace Warehouse.Domain.Models
+﻿namespace Warehouse.AdminAPI.ApiModels.Categories
 {
-    public class Category
+    public class CategoryRequest
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public int StockThreshold { get; set; }
     }

@@ -1,11 +1,5 @@
-﻿using Forex.Infrastructure.RabbitMq.Abstractions;
-using MassTransit;
+﻿using MassTransit;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Warehouse.Application.Events;
 using Warehouse.Domain.Abstractions;
 using Warehouse.Domain.Exceptions;
@@ -28,56 +22,60 @@ namespace Warehouse.Application.Commands
 
         public async Task<Unit> Handle(MakeOrderCommand request, CancellationToken cancellationToken)
         {
-            request.ProductId = 1;
-
             var product = await _productRepository.GetProductWithCategoryAsync(request.ProductId);
             if (product is null)
             {
                 throw new NotFoundException("Product not found.");
             }
 
-            if (product.State == ProductState.OutOfStock)
+
+            var dateTime = DateTime.UtcNow;
+
+            var order = new Order
+            {
+                ClientId = request.ClientId,
+                ProductId = product.Id,
+                DateTime = dateTime,
+                Count = request.Count
+            };
+
+
+            if (product.State == ProductState.OutOfStock || product.Stock < request.Count)
             {
                 if (!request.ReserveWhenAvaliable)
                 {
                     throw new NotFoundException("Product not avaliable.");
                 }
+                else
+                {
+                    order.State = OrderState.WaitingAvailability;
+
+                    order.CorrelationId = Guid.NewGuid();
+
+                    var orderId = await _orderRepository.CreateAsync(order);
+
+                    var message = new OrderSubmittedEvent
+                    {
+                        CorrelationId = order.CorrelationId.Value,
+                        OrderId = orderId,
+                        OrderState = order.State,
+                        ProductId = product.Id,
+                        ClientId = request.ClientId,
+                        Count = request.Count,
+                        DateTime = dateTime
+                    };
+
+                    await _bus.Publish(message, cancellationToken);
+                }
+
+                return Unit.Value;
             }
 
-            if (product.Stock < request.Count)
-            {
-                throw new NotFoundException("Product not avaliable.");
-            }
+            order.State = product.State == ProductState.Available ? OrderState.Approved : OrderState.UnderReview;
 
-            var correlationId = Guid.NewGuid();
+            product.Stock -= request.Count;
 
-            product.Stock--;
-
-            var orderId = await _orderRepository.CreateAsync(new Order
-            {
-                ClientId = request.ClientId,
-                ProductId = product.Id,
-                State = OrderState.Pending,
-                CorrelationId = correlationId,
-                DateTime = DateTime.UtcNow,
-                Count = 2,
-            });
-
-            var message = new OrderSubmittedEvent
-            {
-                CorrelationId = correlationId,
-                OrderId = orderId,
-                OrderState = OrderState.Pending,
-                ProductId = product.Id,
-                ClientId = request.ClientId,
-                Count = request.Count,
-                ReserveWhenAvaliable = request.ReserveWhenAvaliable,
-                ProductState = product.State,
-                DateTime = DateTime.UtcNow
-            };
-
-
-            await _bus.Publish(message, cancellationToken);
+            await _orderRepository.CreateAsync(order);
 
             return Unit.Value;
         }

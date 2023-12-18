@@ -65,8 +65,8 @@ namespace Warehouse.AdminAPI.Application.Commands.Orders
                         CorrelationId = order.CorrelationId.Value,
                         OrderId = order.Id
                     });
-                    await _bus.PublishBatch(events, cancellationToken);
                 }
+                await _bus.PublishBatch(events, cancellationToken);
             }
 
             // await _orderRepository.UpdateStateAsync(order);

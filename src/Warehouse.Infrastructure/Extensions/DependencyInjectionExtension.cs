@@ -27,9 +27,6 @@ public static class DependencyInjectionExtension
 
     public static IServiceCollection AddDbContext(this IServiceCollection services, IConfiguration configuration)
     {
-
-        var  a = configuration.GetConnectionString("Postgre");
-
         services.AddDbContext<PostgreDbContext>(options =>
         {
             options.UseNpgsql(configuration.GetConnectionString("Postgre"));
@@ -40,4 +37,6 @@ public static class DependencyInjectionExtension
         return services;
 
     }
+
+
 }

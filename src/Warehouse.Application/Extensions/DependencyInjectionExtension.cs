@@ -1,31 +1,25 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Warehouse.Domain.Abstractions;
-using Warehouse.Infrastructure.Repositories;
+﻿using Forex.Infrastructure.Correlation;
 using Forex.Infrastructure.RabbitMq;
-using Forex.Infrastructure.RabbitMq.Extensions;
-using MassTransit;
-using Warehouse.Application.Saga;
-using Warehouse.Application.Events;
-using Warehouse.Application.Messages;
-using Forex.Infrastructure.Correlation;
 using Forex.Infrastructure.RabbitMq.Abstractions;
 using Forex.Infrastructure.RabbitMq.Configurators;
-using Forex.Infrastructure.RabbitMq.Correlation;
 using Forex.Infrastructure.RabbitMq.Internal.Filters;
 using Forex.Infrastructure.RabbitMq.Internal.Observers;
 using Forex.Infrastructure.RabbitMq.Options;
 using Forex.Infrastructure.RabbitMq.Storages;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using System.Reflection;
 using System.Security.Authentication;
 using Warehouse.Application.Consumers;
+using Warehouse.Application.Events;
+using Warehouse.Application.Messages;
+using Warehouse.Application.Saga;
+using Warehouse.Infrastructure;
+using Warehouse.Infrastructure.Saga;
 namespace Warehouse.Application.Extensions
 {
     public static class DependencyInjectionExtension
@@ -159,7 +153,22 @@ namespace Warehouse.Application.Extensions
 
                         c.SetInMemorySagaRepositoryProvider();
 
-                        c.AddSagaStateMachine<OrderProcessorStateMachine, OrderProcessingState>();
+                        c.AddSagaStateMachine<OrderProcessorStateMachine, OrderProcessingState>().EntityFrameworkRepository(r =>
+                        {
+                            r.ConcurrencyMode = ConcurrencyMode.Optimistic; // or use Pessimistic, which does not require RowVersion
+
+                            r.AddDbContext<DbContext, OrderStateDbContext>((provider, builder) =>
+                            {
+                                builder.UseNpgsql("Host=localhost;Port=5432;Username=postgres;Password=admin;Database=Warehouse;", m =>
+                                {
+                                    m.MigrationsAssembly("Warehouse.Infrastructure");
+                                    m.MigrationsHistoryTable($"__EFMigrationsHistory");
+                                });
+                            });
+
+                            //This line is added to enable PostgreSQL features
+                            r.UsePostgres();
+                        });
 
                     })
                     //.ConfigureRabbitMq((context, cfg) =>
@@ -191,5 +200,7 @@ namespace Warehouse.Application.Extensions
             return services;
 
         }
+
+       
     }
 }

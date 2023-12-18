@@ -18,6 +18,6 @@
         Approved = 1,
         Rejected = 2,
         UnderReview = 3,
-        Pending = 4,
+        WaitingAvailability = 4,
     }
 }
